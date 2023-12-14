@@ -4,8 +4,8 @@ export interface Competition {
   code: string;
   amount: number;
   date: Date;
-  startTime: '';
-  endTime:'';
+  startTime: number;
+  endTime:number;
   location:string;
   numberOfParticipants:number;
 }

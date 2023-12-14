@@ -6,6 +6,8 @@ import { CompetitionService } from './competition.service';
 
 import { ReactiveFormsModule } from '@angular/forms';
 import {Competition} from "./competition";
+import {MemberService} from "../members/member.service";
+import {RankingService} from "../rankings/ranking.service";
 
 
 @Component({
@@ -16,7 +18,8 @@ import {Competition} from "./competition";
 export class CompetitionComponent implements OnInit {
   competitions: Competition[] = [];
   competitionDate: Date = new Date();
-
+  isAssignMode:boolean  =false;
+  assignForm!:FormGroup;
   isUpdateMode: boolean = false;
   selectedCompetitionId: string = '';
   updateForm!: FormGroup;
@@ -25,6 +28,8 @@ export class CompetitionComponent implements OnInit {
 
   constructor(
     private competitionService: CompetitionService,
+    private memberService: MemberService,
+    private rankingService: RankingService,
     private formBuilder: FormBuilder,
     private route: ActivatedRoute,
     private router: Router
@@ -50,7 +55,9 @@ export class CompetitionComponent implements OnInit {
       nbParticipants: new FormControl( Validators.required)
     });
 
-
+    this.assignForm = this.formBuilder.group({
+      memberNum: new FormControl( Validators.required)
+    });
 
     const isCompetitionsRoute = this.route.snapshot.url[0]?.path === 'competitions';
     if (isCompetitionsRoute) {
@@ -120,12 +127,12 @@ console.log(this.selectedCompetitionId);
       console.log("after");
       const CompetitionAmount = this.updateForm.value.competitionAmount;
       const CompetitionDate = this.updateForm.value.competitionDate;
-      // const CompetitionStartTime = this.updateForm.value.competitionStartTime;
-      // const CompetitionEndTime = this.updateForm.value.competitionEndTime;
+      const CompetitionStartTime = this.updateForm.value.competitionStartTime;
+      const CompetitionEndTime = this.updateForm.value.competitionEndTime;
       const CompetitionLocation = this.updateForm.value.competitionLocation;
       const competitionNBParticipants = this.updateForm.value.competitionNBParticipants;
-      const CompetitionStartTime = this.addForm.value.startTime;
-      const CompetitionEndTime = this.addForm.value.endTime;
+      // const CompetitionStartTime = this.addForm.value.startTime;
+      // const CompetitionEndTime = this.addForm.value.endTime;
       console.log(competitionNBParticipants);
 
 
@@ -204,4 +211,177 @@ console.log(this.selectedCompetitionId);
     return competitionCode;
   }
 
+
+  assignMember(competitionId: string) {
+    // Set the competition ID to the selectedCompetitionId
+    this.selectedCompetitionId = competitionId;
+    // Set isAssignMode to true to display the form
+    this.isAssignMode = true;
+  }
+
+  submitAssign() {
+    if (this.assignForm.valid) {
+      const memberNum = this.assignForm.value.memberNum;
+
+      // Call your memberService to check if the member exists
+      this.memberService.getMemberById(memberNum).subscribe(
+        (member: any) => {
+          if (member) {
+            const addedRanking = {
+              num: memberNum,
+              code: this.selectedCompetitionId // Use the selectedCompetitionId here
+            };
+
+            // Add the ranking (assign the member to the competition)
+            this.rankingService.addRanking(addedRanking).subscribe(
+              (rankingResponse: any) => {
+                console.log('Ranking Added successfully');
+                this.cancelAssign(); // Close the form or perform other actions
+                // Optionally, you can fetch the competitions again after assigning the member
+                this.fetchCompetitions();
+              },
+              (rankingError: any) => {
+                console.error('Error adding ranking:', rankingError);
+                // Handle ranking error - show an error message or perform other actions
+              }
+            );
+          } else {
+            console.log('Member does not exist or returned null');
+            // Handle null member - show an error message or perform other actions
+          }
+        },
+        (error) => {
+          console.error('Error fetching member:', error);
+          // Handle error - show an error message or perform other actions
+        }
+      );
+    }
+  }
+
+
+  // assignMember(competitionId: string) {
+  //   this.isAssignMode = true;
+  //   this.selectedCompetitionId = competitionId;
+  //   const competition = this.competitions.find(a => a.code === competitionId);
+  //   console.log(competition);
+  //
+  //   if (this.assignForm.valid) {
+  //     const memberNum = this.assignForm.value.memberNum;
+  //
+  //     const addedRanking = {
+  //       num: memberNum,
+  //       code: competitionId
+  //     };
+  //
+  //     this.memberService.getMemberById(memberNum).subscribe(
+  //       (member: any) => {
+  //         if (member) {
+  //           this.rankingService.addRanking(addedRanking).subscribe(
+  //             (rankingResponse: any) => {
+  //               console.log('Ranking Added successfully');
+  //               this.cancelAdd();
+  //               this.fetchCompetitions();
+  //             },
+  //             (rankingError: any) => {
+  //               console.error('Error adding ranking:', rankingError);
+  //               // Handle ranking error - show an error message or perform other actions
+  //             }
+  //           );
+  //         } else {
+  //           console.log('Member does not exist or returned null');
+  //           // Handle null member - show an error message or perform other actions
+  //         }
+  //       },
+  //       (error) => {
+  //         console.error('Error fetching member:', error);
+  //         // Handle error - show an error message or perform other actions
+  //       }
+  //     );
+  //   }
+  // }
+
+
+
+
+
+
+
+
+
+
+
+  // assignMember(competitionId: string) {
+  //   this.isAssignMode = true;
+  //   this.selectedCompetitionId = competitionId;
+  //   const competition = this.competitions.find(a => a.code === competitionId);
+  //   console.log(competition);
+  //
+  //   if (this.assignForm.valid) {
+  //     const memberNum = this.assignForm.value.memberNum;
+  //
+  //     this.memberService.getMemberById(memberNum).subscribe(
+  //       (member: any) => {
+  //         if (member) {
+  //           const addedRanking = {
+  //             num: memberNum,
+  //             code: competitionId
+  //           };
+  //
+  //           this.rankingService.addRanking(addedRanking).subscribe(
+  //             (rankingResponse: any) => {
+  //               console.log('Ranking Added successfully');
+  //               this.cancelAdd();
+  //               this.fetchCompetitions();
+  //             },
+  //             (rankingError: any) => {
+  //               console.error('Error adding ranking:', rankingError);
+  //               // Handle ranking error - show an error message or perform other actions
+  //             }
+  //           );
+  //         } else {
+  //           console.log('Member does not exist or returned null');
+  //           // Handle null member - show an error message or perform other actions
+  //         }
+  //       },
+  //       (error) => {
+  //         console.error('Error fetching member:', error);
+  //         // Handle error - show an error message or perform other actions
+  //       }
+  //     );
+  //   }
+  // }
+
+
+  cancelAssign() {
+    this.assignForm.reset();
+    this.isAssignMode = false;
+  }
+  // assignMember(competitionId: string) {
+  //
+  //   this.isAssignMode = true;
+  //   this.selectedCompetitionId = competitionId;
+  //   const competition = this.competitions.find(a => a.code === competitionId);
+  //   console.log(competition)
+  //   if (this.assignForm.valid) {
+  //     const memberNum = this.assignForm.value.memberNum;
+  //     if (this.memberService.getMemberById(memberNum) != null) {
+  //       const addedRanking = {
+  //         num: memberNum,
+  //         code: competitionId
+  //       };
+  //       this.rankingService.addRanking(addedRanking).subscribe(
+  //         (response) => {
+  //           console.log('Member Assigned successfully');
+  //           this.cancelAdd();
+  //           this.fetchCompetitions();
+  //         },
+  //         (error) => {
+  //           console.error('Error assign competition:', error);
+  //         }
+  //       );
+  //     }
+  //   }else{
+  //
+  //   }
+  // }
 }

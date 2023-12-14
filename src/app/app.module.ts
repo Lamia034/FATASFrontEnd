@@ -8,13 +8,15 @@ import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import { NavbarComponent } from './navbar/navbar.component';
 import { CompetitionComponent } from './competitions/competition.component';
 import { MemberComponent } from './members/member.component';
+import { RankingComponent } from './rankings/ranking.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     NavbarComponent,
     CompetitionComponent,
-    MemberComponent
+    MemberComponent,
+    RankingComponent
   ],
   imports: [
     BrowserModule,

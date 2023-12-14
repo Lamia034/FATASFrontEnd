@@ -17,6 +17,10 @@ export class MemberService {
     return this.http.get<Member[]>(this.apiBaseUrl + "/members");
   }
 
+  public getMemberById(memberId: number): Observable<any> {
+    console.log('fetching member with ID:', memberId);
+    return this.http.get<any>(`${this.apiBaseUrl}/members/${memberId}`);
+  }
   public deleteMember(memberId: number): Observable<any> {
     console.log('Deleting member with ID:', memberId);
     return this.http.delete<any>(`${this.apiBaseUrl}/members/${memberId}`);
