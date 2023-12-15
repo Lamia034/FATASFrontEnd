@@ -9,6 +9,8 @@ import { NavbarComponent } from './navbar/navbar.component';
 import { CompetitionComponent } from './competitions/competition.component';
 import { MemberComponent } from './members/member.component';
 import { RankingComponent } from './rankings/ranking.component';
+import { HuntingComponent } from './huntings/hunting.component';
+import { FishComponent } from './fishes/fish.component';
 
 @NgModule({
   declarations: [
@@ -16,7 +18,9 @@ import { RankingComponent } from './rankings/ranking.component';
     NavbarComponent,
     CompetitionComponent,
     MemberComponent,
-    RankingComponent
+    RankingComponent,
+    HuntingComponent,
+    FishComponent
   ],
   imports: [
     BrowserModule,

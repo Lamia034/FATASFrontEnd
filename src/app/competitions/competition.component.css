@@ -1,0 +1,13 @@
+/* Your CSS file */
+.active-page {
+  /* Define the style for the active page */
+  font-weight: bold; /* For example */
+  color: #000; /* Change color as needed */
+
+}
+
+.inactive-page {
+  /* Define the style for inactive pages */
+  /* Style it differently compared to the active page */
+ /* Change color as needed */
+}

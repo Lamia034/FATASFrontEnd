@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import {map, Observable, tap} from 'rxjs';
 import { Member } from './member';
+import {Competition} from "../competitions/competition";
 
 
 @Injectable({
@@ -13,8 +14,11 @@ export class MemberService {
   constructor(private http: HttpClient) {
   }
 
-  public getMembers(): Observable<Member[]> {
-    return this.http.get<Member[]>(this.apiBaseUrl + "/members");
+  // public getMembers(): Observable<Member[]> {
+  //   return this.http.get<Member[]>(this.apiBaseUrl + "/members");
+  // }
+  public  getMembers(page: number, size: number): Observable<Member[]> {
+    return this.http.get<Member[]>(`${this.apiBaseUrl}/members?page=${page}&size=${size}`);
   }
 
   public getMemberById(memberId: number): Observable<any> {

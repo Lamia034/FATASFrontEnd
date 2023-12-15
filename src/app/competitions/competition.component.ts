@@ -8,6 +8,9 @@ import { ReactiveFormsModule } from '@angular/forms';
 import {Competition} from "./competition";
 import {MemberService} from "../members/member.service";
 import {RankingService} from "../rankings/ranking.service";
+import {HuntingService} from "../huntings/hunting.service";
+import {Fish} from "../fishes/fish";
+import {FishService} from "../fishes/fish.service";
 
 
 @Component({
@@ -16,8 +19,15 @@ import {RankingService} from "../rankings/ranking.service";
   styleUrls: ['./competition.component.css']
 })
 export class CompetitionComponent implements OnInit {
+  fishes: Fish[] = [];
+  selectedFish: any;
+  pages: number[] = [];
+  currentPage = 0;
+  pageSize: number = 6;
   competitions: Competition[] = [];
   competitionDate: Date = new Date();
+  isHuntingMode:boolean  =false;
+  huntingForm!:FormGroup;
   isAssignMode:boolean  =false;
   assignForm!:FormGroup;
   isUpdateMode: boolean = false;
@@ -30,12 +40,15 @@ export class CompetitionComponent implements OnInit {
     private competitionService: CompetitionService,
     private memberService: MemberService,
     private rankingService: RankingService,
+    private huntingService: HuntingService,
+    private fishService: FishService,
     private formBuilder: FormBuilder,
     private route: ActivatedRoute,
     private router: Router
   ) {}
 
   ngOnInit() {
+    this.fetchPage(1);
     this.updateForm = this.formBuilder.group({
     //  competitionCode: ['', Validators.required],
       competitionAmount: [ Validators.required],
@@ -58,26 +71,55 @@ export class CompetitionComponent implements OnInit {
     this.assignForm = this.formBuilder.group({
       memberNum: new FormControl( Validators.required)
     });
-
+    this.huntingForm = this.formBuilder.group({
+      memberNumber: new FormControl( Validators.required),
+      fishNumber:new FormControl( Validators.required),
+      fish:new FormControl( Validators.required)
+    });
     const isCompetitionsRoute = this.route.snapshot.url[0]?.path === 'competitions';
     if (isCompetitionsRoute) {
-      this.fetchCompetitions();
+      // this.fetchCompetitions();
+      this.fetchCompetitions(this.currentPage, this.pageSize);
 
     }
 
+
+    this.loadFishes();
   }
 
 
 
 
-  fetchCompetitions() {
-    this.competitionService.getCompetitions().subscribe(
+  // fetchCompetitions() {
+  //   this.competitionService.getCompetitions().subscribe(
+  //     (data: Competition[]) => {
+  //       this.competitions = data;
+  //       console.log(data);
+  //     },
+  //     (error) => {
+  //       console.error('Error fetching competitions:', error);
+  //     }
+  //   );
+  // }
+  fetchCompetitions(page: number, size: number) {
+    this.competitionService.getCompetitions(page, size).subscribe(
       (data: Competition[]) => {
         this.competitions = data;
         console.log(data);
       },
       (error) => {
         console.error('Error fetching competitions:', error);
+      }
+    );
+  }
+
+  loadFishes() {
+    this.fishService.getFishes().subscribe(
+      (data: Fish[]) => {
+        this.fishes = data;
+      },
+      (error) => {
+        console.error('Error fetching fishes:', error);
       }
     );
   }
@@ -152,7 +194,8 @@ console.log(this.selectedCompetitionId);
           console.log('Competition updated successfully');
           this.cancelUpdate();
 
-          this.fetchCompetitions();
+        //  this.fetchCompetitions();
+          this.fetchCompetitions(this.currentPage, this.pageSize);
           console.log("fetched?");
         },
         (error) => {
@@ -188,7 +231,9 @@ console.log(this.selectedCompetitionId);
         (response) => {
           console.log('Competition created successfully');
           this.cancelAdd();
-          this.fetchCompetitions();
+          // this.fetchCompetitions();
+          this.fetchCompetitions(this.currentPage, this.pageSize);
+
         },
         (error) => {
           console.error('Error creating competition:', error);
@@ -213,9 +258,7 @@ console.log(this.selectedCompetitionId);
 
 
   assignMember(competitionId: string) {
-    // Set the competition ID to the selectedCompetitionId
     this.selectedCompetitionId = competitionId;
-    // Set isAssignMode to true to display the form
     this.isAssignMode = true;
   }
 
@@ -223,40 +266,146 @@ console.log(this.selectedCompetitionId);
     if (this.assignForm.valid) {
       const memberNum = this.assignForm.value.memberNum;
 
-      // Call your memberService to check if the member exists
       this.memberService.getMemberById(memberNum).subscribe(
         (member: any) => {
           if (member) {
             const addedRanking = {
               num: memberNum,
-              code: this.selectedCompetitionId // Use the selectedCompetitionId here
+              code: this.selectedCompetitionId
             };
 
-            // Add the ranking (assign the member to the competition)
             this.rankingService.addRanking(addedRanking).subscribe(
               (rankingResponse: any) => {
                 console.log('Ranking Added successfully');
-                this.cancelAssign(); // Close the form or perform other actions
-                // Optionally, you can fetch the competitions again after assigning the member
-                this.fetchCompetitions();
+                this.cancelAssign();
+
+                // this.fetchCompetitions();
+                this.fetchCompetitions(this.currentPage, this.pageSize);
+
               },
               (rankingError: any) => {
                 console.error('Error adding ranking:', rankingError);
-                // Handle ranking error - show an error message or perform other actions
               }
             );
           } else {
-            console.log('Member does not exist or returned null');
-            // Handle null member - show an error message or perform other actions
+            console.log('Member does not exist try to add it');
+            // this.router.navigateByUrl('/members');
           }
         },
         (error) => {
           console.error('Error fetching member:', error);
-          // Handle error - show an error message or perform other actions
         }
       );
     }
   }
+
+
+  onFishSelection(selectedFishName: string) {
+    console.log('Fish selected:', selectedFishName); 
+
+    this.fishService.getFishById(selectedFishName).subscribe(
+      (fishData) => {
+        console.log('Fetched fish data:', fishData);
+        this.selectedFish = fishData;
+        console.log('Average Weight:', this.selectedFish.averageWeight);
+      },
+      (error) => {
+        console.error('Error fetching fish:', error);
+      }
+    );
+  }
+
+
+
+
+  addHunting(competitionId: string) {
+    this.selectedCompetitionId = competitionId;
+    this.isHuntingMode = true;
+  }
+
+
+  submitNewHunting(){
+    console.log('Submit new hunting method called');
+    if (this.huntingForm.valid) {
+      const memberNumber = this.huntingForm.value.memberNumber;
+      const fishNumber = this.huntingForm.value.fishNumber;
+      const fish = this.huntingForm.value.fish;
+
+      const addedHunting = {
+        code:this.selectedCompetitionId,
+        num: memberNumber,
+        numberOfFish:fishNumber,
+        fish:fish
+      };
+      console.log(addedHunting);
+      this.huntingService.addHunting(addedHunting).subscribe(
+        (response) => {
+          console.log('Hunting submitted successfully');
+          this.cancelAdd();
+          // this.fetchCompetitions();
+          // this.fetchCompetitions(this.currentPage, this.pageSize);
+
+        },
+        (error) => {
+          console.error('Error creating hunting:', error);
+        }
+      );
+    }
+  }
+
+  cancelHunting() {
+    this.huntingForm.reset();
+    this.isHuntingMode = false;
+  }
+
+
+
+// Inside your component class
+  getCompetitionStatus(competitionDate: Date): string {
+    const currentDate = new Date();
+    const competitionDateObj = new Date(competitionDate);
+// console.log(currentDate);
+    // Set hours, minutes, seconds, and milliseconds to 0 for both dates
+    currentDate.setHours(0, 0, 0, 0);
+    competitionDateObj.setHours(0, 0, 0, 0);
+
+    if (competitionDateObj < currentDate) {
+      return 'Passed';
+    } else if (competitionDateObj > currentDate) {
+      return 'Next';
+    } else {
+      return 'In Progress';
+    }
+  }
+
+
+
+
+  fetchPage(page: number): void {
+    this.competitionService.getCompetitions(page, 6).subscribe(
+      (competitions: Competition[]) => {
+        this.competitions = competitions;
+        this.currentPage = page;
+        this.generatePageNumbers();
+      },
+      (error: any) => {
+        console.error('Error fetching competitions:', error);
+
+      }
+    );
+  }
+
+  generatePageNumbers(): void {
+    this.pages = Array.from({ length: 10 }, (_, i) => i + 1);
+  }
+
+  loadPage(page: number): void {
+    this.fetchPage(page - 1);
+    this.currentPage = page;
+
+  }
+
+
 
 
   // assignMember(competitionId: string) {

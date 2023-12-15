@@ -6,6 +6,7 @@ import { MemberService } from './member.service';
 
 import { ReactiveFormsModule } from '@angular/forms';
 import {IdentityDocumentType, Member} from "./member";
+import {Competition} from "../competitions/competition";
 
 
 @Component({
@@ -14,6 +15,9 @@ import {IdentityDocumentType, Member} from "./member";
   styleUrls: ['./member.component.css']
 })
 export class MemberComponent implements OnInit {
+  pages: number[] = [];
+  currentPage = 0;
+  pageSize: number = 6;
   types: string[] = Object.values(IdentityDocumentType);
   members: Member[] = [];
   accessionDate: Date = new Date();
@@ -31,6 +35,7 @@ export class MemberComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.fetchPage(0);
     this.updateForm = this.formBuilder.group({
     //  memberNum: ['', Validators.required],
       memberName: ['', Validators.required],
@@ -56,8 +61,8 @@ export class MemberComponent implements OnInit {
 
     const isMembersRoute = this.route.snapshot.url[0]?.path === 'members';
     if (isMembersRoute) {
-      this.fetchMembers();
-
+      // this.fetchMembers();
+      this.fetchMembers(this.currentPage, this.pageSize);
     }
 
   }
@@ -65,8 +70,8 @@ export class MemberComponent implements OnInit {
 
 
 
-  fetchMembers() {
-    this.memberService.getMembers().subscribe(
+  fetchMembers(page: number, size: number) {
+    this.memberService.getMembers(page, size).subscribe(
       (data: Member[]) => {
         this.members = data;
         console.log(data);
@@ -76,7 +81,6 @@ export class MemberComponent implements OnInit {
       }
     );
   }
-
 
 
   deleteMember(memberId: number) {
@@ -145,7 +149,8 @@ export class MemberComponent implements OnInit {
           console.log('Member updated successfully');
           this.cancelUpdate();
 
-          this.fetchMembers();
+          // this.fetchMembers();
+          this.fetchMembers(this.currentPage, this.pageSize);
           console.log("fetched?");
         },
         (error) => {
@@ -181,7 +186,8 @@ export class MemberComponent implements OnInit {
         (response) => {
           console.log('Member created successfully');
           this.cancelAdd();
-          this.fetchMembers();
+          // this.fetchMembers();
+          this.fetchMembers(this.currentPage, this.pageSize);
         },
         (error) => {
           console.error('Error creating member:', error);
@@ -194,5 +200,29 @@ export class MemberComponent implements OnInit {
     this.showAddForm = false;
   }
 
+
+  fetchPage(page: number): void {
+    this.memberService.getMembers(page, 6).subscribe(
+      (members: Member[]) => {
+        this.members = members;
+        this.currentPage = page;
+        this.generatePageNumbers();
+      },
+      (error: any) => {
+        console.error('Error fetching members:', error);
+
+      }
+    );
+  }
+
+  generatePageNumbers(): void {
+    this.pages = Array.from({ length: 10 }, (_, i) => i + 1);
+  }
+
+  loadPage(page: number): void {
+    this.fetchPage(page - 1);
+    this.currentPage = page;
+
+  }
 
 }
