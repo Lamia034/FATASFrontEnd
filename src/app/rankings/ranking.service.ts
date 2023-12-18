@@ -16,6 +16,10 @@ export class RankingService {
   public getRankings(): Observable<Ranking[]> {
     return this.http.get<Ranking[]>(this.apiBaseUrl + "/rankings");
   }
+  public getTopThreeCompetitors(competitionCode: string): Observable<any> {
+    const url = `${this.apiBaseUrl}/rankings?competitionCode=${competitionCode}`;
+    return this.http.get<any>(url);
+  }
 
   public deleteRanking(rankingId: string): Observable<any> {
     console.log('Deleting ranking with ID:', rankingId);

@@ -12,7 +12,7 @@ const routes: Routes = [
   {path:'members' , component:MemberComponent},
   { path: 'members/:memberId', component: MemberComponent },
   {path:'rankings' , component:RankingComponent},
-  { path: 'rankings/:rankingId', component: RankingComponent },
+  { path: 'rankings/:competitionId', component: RankingComponent },
   {path:'huntings' , component:HuntingComponent},
   { path: 'huntings/:huntingId', component: HuntingComponent },
   {path:'fishs' , component:FishComponent},

@@ -19,6 +19,7 @@ import {FishService} from "../fishes/fish.service";
   styleUrls: ['./competition.component.css']
 })
 export class CompetitionComponent implements OnInit {
+  topThreeCompetitors: any[] = [];
   fishes: Fish[] = [];
   selectedFish: any;
   pages: number[] = [];
@@ -26,6 +27,7 @@ export class CompetitionComponent implements OnInit {
   pageSize: number = 6;
   competitions: Competition[] = [];
   competitionDate: Date = new Date();
+  isPodiumMode:boolean = false;
   isHuntingMode:boolean  =false;
   huntingForm!:FormGroup;
   isAssignMode:boolean  =false;
@@ -301,7 +303,7 @@ console.log(this.selectedCompetitionId);
 
 
   onFishSelection(selectedFishName: string) {
-    console.log('Fish selected:', selectedFishName); 
+    console.log('Fish selected:', selectedFishName);
 
     this.fishService.getFishById(selectedFishName).subscribe(
       (fishData) => {
@@ -335,7 +337,7 @@ console.log(this.selectedCompetitionId);
         code:this.selectedCompetitionId,
         num: memberNumber,
         numberOfFish:fishNumber,
-        fish:fish
+        name:fish
       };
       console.log(addedHunting);
       this.huntingService.addHunting(addedHunting).subscribe(
@@ -379,7 +381,31 @@ console.log(this.selectedCompetitionId);
   }
 
 
+  seePodium(competitionId: string) {
+    this.selectedCompetitionId = competitionId;
+    this.isPodiumMode = true;
+    this.podium();
+  }
+  podium() {
 
+    this.rankingService.getTopThreeCompetitors(this.selectedCompetitionId).subscribe(
+      (data: any) => {
+        console.log('All competitors:', data);
+
+        this.topThreeCompetitors = data.slice(0, 3);
+
+        console.log('Top three competitors:', this.topThreeCompetitors);
+      },
+      (error: any) => {
+        console.error('Error fetching top three competitors:', error);
+      }
+    );
+  }
+
+
+  cancelPodium() {
+    this.isPodiumMode = false;
+  }
 
   fetchPage(page: number): void {
     this.competitionService.getCompetitions(page, 6).subscribe(

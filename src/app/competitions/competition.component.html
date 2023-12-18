@@ -197,6 +197,25 @@
             Go Hunt
           </button>
 
+          <button
+            *ngIf="getCompetitionStatus(competition.date) === 'In Progress'"
+            (click)="seePodium(competition.code)"
+            class="rounded px-1 py-1 text-white bg-pink-500"
+          >
+            Podium!
+          </button>
+          <button
+            *ngIf="getCompetitionStatus(competition.date) !== 'In Progress'"
+            class="rounded px-1 py-1 text-white bg-gray-400 cursor-not-allowed"
+            disabled
+          >
+            Podium!
+          </button>
+
+
+
+
+
         </div>
       </td>
     </tr>
@@ -205,6 +224,8 @@
     </tbody>
   </table>
 </div>
+
+
 
 <nav aria-label="Page navigation example" class="flex justify-center ">
   <ul class="inline-flex -space-x-px text-base h-10">
@@ -220,11 +241,43 @@
 </nav>
 
 
-<!-- hunting form -->
+
+
+  <div *ngIf="isPodiumMode" class="popup">
+    <div class="flex items-end justify-center popup-content">
+
+      <div class="p-6 bg-green-300 rounded-lg mr-4" style="height: 100px;">
+        <h2 class="text-2xl font-bold">3rd Place</h2>
+        <p>{{ topThreeCompetitors[2].member.name }}</p>
+        <p>Score: {{ topThreeCompetitors[2].score }}</p>
+      </div>
+
+      <!-- First place -->
+      <div class="p-6 bg-yellow-300 rounded-lg mr-4" style="height: 200px;">
+        <h2 class="text-2xl font-bold">1st Place</h2>
+        <!-- Display first place competitor's details here -->
+        <p>{{ topThreeCompetitors[0].member.name }}</p>
+        <p>Score: {{ topThreeCompetitors[0].score }}</p>
+      </div>
+
+
+      <div class="p-6 bg-pink-300 rounded-lg mr-4" style="height: 150px;">
+        <h2 class="text-2xl font-bold">2nd Place</h2>
+
+        <p>{{ topThreeCompetitors[1].member.name }}</p>
+        <p>Score: {{ topThreeCompetitors[1].score }}</p>
+      </div>
+
+      <button type="button" (click)="cancelPodium()" class="bg-gray-500 text-white px-4 py-4 mx-10 my-10 rounded-md flex justify-center items-center">Back =></button>
+    </div>
+  </div>
+
+
+  <!-- hunting form -->
 <div *ngIf="isHuntingMode" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
   <div class="bg-white rounded-lg p-6 max-w-md">
 
-    add form
+    hunting form
     <form [formGroup]="huntingForm" (ngSubmit)="submitNewHunting()">
 
       <label for="memberNumber" class="block mb-2">member's number:</label>
@@ -241,9 +294,9 @@
         <option *ngFor="let fish of fishes" [value]="fish.name"   (change)="onFishSelection(fish.name)">{{ fish.name }}</option>
       </select>
 
-      <div *ngIf="selectedFish" class="bg-green-400">
-        Average Weight: {{ selectedFish.averageWeight }}
-      </div>
+<!--      <div *ngIf="selectedFish" class="bg-green-400">-->
+<!--        Average Weight: {{ selectedFish.averageWeight }}-->
+<!--      </div>-->
 
       <label for="fishNumber" class="block mb-2">Number of Fishes:</label>
       <input type="number" id="fishNumber" name="fishNumber" formControlName="fishNumber"
