@@ -198,19 +198,21 @@
           </button>
 
           <button
-            *ngIf="getCompetitionStatus(competition.date) === 'In Progress'"
-            (click)="seePodium(competition.code)"
-            class="rounded px-1 py-1 text-white bg-pink-500"
-          >
-            Podium!
-          </button>
-          <button
-            *ngIf="getCompetitionStatus(competition.date) !== 'In Progress'"
+            *ngIf="getCompetitionStatus(competition.date) == 'Next'"
             class="rounded px-1 py-1 text-white bg-gray-400 cursor-not-allowed"
             disabled
           >
             Podium!
           </button>
+
+          <button
+            *ngIf="getCompetitionStatus(competition.date) !== 'Next'"
+            (click)="seePodium(competition.code)"
+            class="rounded px-1 py-1 text-white bg-pink-500"
+          >
+            Podium!
+          </button>
+
 
 
 
@@ -249,6 +251,7 @@
       <div class="p-6 bg-green-300 rounded-lg mr-4" style="height: 100px;">
         <h2 class="text-2xl font-bold">3rd Place</h2>
         <p>{{ topThreeCompetitors[2].member.name }}</p>
+        <p>{{ topThreeCompetitors[2].member.num }}</p>
         <p>Score: {{ topThreeCompetitors[2].score }}</p>
       </div>
 
@@ -257,6 +260,7 @@
         <h2 class="text-2xl font-bold">1st Place</h2>
         <!-- Display first place competitor's details here -->
         <p>{{ topThreeCompetitors[0].member.name }}</p>
+        <p>{{ topThreeCompetitors[0].member.num }}</p>
         <p>Score: {{ topThreeCompetitors[0].score }}</p>
       </div>
 
@@ -265,6 +269,7 @@
         <h2 class="text-2xl font-bold">2nd Place</h2>
 
         <p>{{ topThreeCompetitors[1].member.name }}</p>
+        <p>{{ topThreeCompetitors[1].member.num }}</p>
         <p>Score: {{ topThreeCompetitors[1].score }}</p>
       </div>
 
@@ -401,7 +406,7 @@
   <div class="bg-white rounded-lg p-6 max-w-md">
     add form
     <form [formGroup]="addForm" (ngSubmit)="submitNewCompetition()">
-      <label for="amount" class="block mb-2">Competition's text:</label>
+      <label for="amount" class="block mb-2">Competition's amount:</label>
       <input type="number" id="amount" name="amount" formControlName="amount"
              class="w-full border border-gray-300 rounded-md px-3 py-2 mb-4 focus:outline-none focus:border-blue-500">
 

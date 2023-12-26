@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CompetitionService } from './competition.service';
-
+import Swal from 'sweetalert2';
 import { ReactiveFormsModule } from '@angular/forms';
 import {Competition} from "./competition";
 import {MemberService} from "../members/member.service";
@@ -53,7 +53,7 @@ export class CompetitionComponent implements OnInit {
     this.fetchPage(1);
     this.updateForm = this.formBuilder.group({
     //  competitionCode: ['', Validators.required],
-      competitionAmount: [ Validators.required],
+      competitionAmount: [ Validators.required, Validators.min(0)],
       competitionDate: [ Validators.required],
       competitionStartTime: [Validators.required],
       competitionEndTime: [Validators.required],
@@ -87,22 +87,12 @@ export class CompetitionComponent implements OnInit {
 
 
     this.loadFishes();
+
   }
 
 
 
 
-  // fetchCompetitions() {
-  //   this.competitionService.getCompetitions().subscribe(
-  //     (data: Competition[]) => {
-  //       this.competitions = data;
-  //       console.log(data);
-  //     },
-  //     (error) => {
-  //       console.error('Error fetching competitions:', error);
-  //     }
-  //   );
-  // }
   fetchCompetitions(page: number, size: number) {
     this.competitionService.getCompetitions(page, size).subscribe(
       (data: Competition[]) => {
@@ -208,6 +198,8 @@ console.log(this.selectedCompetitionId);
   }
 
 
+
+
   submitNewCompetition() {
     console.log('Submit new competition method called');
     if (this.addForm.valid) {
@@ -220,29 +212,56 @@ console.log(this.selectedCompetitionId);
       const code = this.createCompetitionCode(location, Date);
 
       const addedCompetition = {
-        code:code,
+        code: code,
         amount: newAmount,
         date: Date,
-        startTime:startTime,
-        endTime:endTime,
-        location:location,
-        numberOfParticipants:nbOfParticipants
+        startTime: startTime,
+        endTime: endTime,
+        location: location,
+        numberOfParticipants: nbOfParticipants
       };
       console.log(addedCompetition);
+
       this.competitionService.addCompetition(addedCompetition).subscribe(
         (response) => {
           console.log('Competition created successfully');
+          Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: 'Competition created successfully!'
+          });
           this.cancelAdd();
-          // this.fetchCompetitions();
           this.fetchCompetitions(this.currentPage, this.pageSize);
-
         },
         (error) => {
           console.error('Error creating competition:', error);
+          if (error.status === 400 && error.error) {
+            let errorMessages = '';
+
+            if (error.error.date) {
+              errorMessages += `<strong>Date:</strong> ${error.error.date}<br>`;
+            }
+            if (error.error.amount) {
+              errorMessages += `<strong>Amount:</strong> ${error.error.amount}<br>`;
+            }
+
+            Swal.fire({
+              icon: 'error',
+              title: 'Validation Error',
+              html: errorMessages || 'Error adding competition, please try again!'
+            });
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'Oops...',
+              text: 'Error adding competition, please try again!'
+            });
+          }
         }
       );
     }
   }
+
   cancelAdd() {
     this.addForm.reset();
     this.showAddForm = false;
@@ -280,6 +299,11 @@ console.log(this.selectedCompetitionId);
               (rankingResponse: any) => {
                 console.log('Ranking Added successfully');
                 this.cancelAssign();
+                Swal.fire({
+                  icon: 'success',
+                  title: 'Success!',
+                  text: 'member assigned successfully!'
+                });
 
                 // this.fetchCompetitions();
                 this.fetchCompetitions(this.currentPage, this.pageSize);
@@ -287,15 +311,26 @@ console.log(this.selectedCompetitionId);
               },
               (rankingError: any) => {
                 console.error('Error adding ranking:', rankingError);
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Oops...',
+                  text: 'Member already assigned to the competition!'
+                });
               }
             );
           } else {
             console.log('Member does not exist try to add it');
+
             // this.router.navigateByUrl('/members');
           }
         },
         (error) => {
           console.error('Error fetching member:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: 'Member does not exist try to add it!'
+          });
         }
       );
     }
@@ -344,12 +379,23 @@ console.log(this.selectedCompetitionId);
         (response) => {
           console.log('Hunting submitted successfully');
           this.cancelAdd();
+          this.huntingForm.reset();
+          this.isHuntingMode = false;
           // this.fetchCompetitions();
           // this.fetchCompetitions(this.currentPage, this.pageSize);
-
+          Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: 'Hunting submitted successfully!'
+          });
         },
         (error) => {
           console.error('Error creating hunting:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: 'Failed to submit hunting. Member not participated in this competition!'
+          });
         }
       );
     }
@@ -362,12 +408,12 @@ console.log(this.selectedCompetitionId);
 
 
 
-// Inside your component class
+
   getCompetitionStatus(competitionDate: Date): string {
     const currentDate = new Date();
     const competitionDateObj = new Date(competitionDate);
 // console.log(currentDate);
-    // Set hours, minutes, seconds, and milliseconds to 0 for both dates
+
     currentDate.setHours(0, 0, 0, 0);
     competitionDateObj.setHours(0, 0, 0, 0);
 

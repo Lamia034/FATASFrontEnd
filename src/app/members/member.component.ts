@@ -3,10 +3,10 @@ import { Component, OnInit } from '@angular/core';
 import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MemberService } from './member.service';
-
 import { ReactiveFormsModule } from '@angular/forms';
 import {IdentityDocumentType, Member} from "./member";
 import {Competition} from "../competitions/competition";
+import Swal from "sweetalert2";
 
 
 @Component({
@@ -185,12 +185,23 @@ export class MemberComponent implements OnInit {
       this.memberService.addMember(addedMember).subscribe(
         (response) => {
           console.log('Member created successfully');
+
+          Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+              text: 'Member created successfully!'
+          });
           this.cancelAdd();
           // this.fetchMembers();
           this.fetchMembers(this.currentPage, this.pageSize);
         },
         (error) => {
           console.error('Error creating member:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Validation Error',
+            text: 'Error adding member, please try again!'
+          });
         }
       );
     }
