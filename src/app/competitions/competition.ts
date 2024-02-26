@@ -1,3 +1,4 @@
+import {Ranking} from "../rankings/ranking";
 
 
 export interface Competition {
@@ -8,4 +9,5 @@ export interface Competition {
   endTime:number;
   location:string;
   numberOfParticipants:number;
+  rankings: Ranking[];
 }

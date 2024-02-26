@@ -32,7 +32,7 @@ export class MemberService {
 
   updateMember(memberId: number, updatedMember: any): Observable<Member> {
     const url = `${this.apiBaseUrl}/members/${memberId}`;
-    console.log(updatedMember);
+    console.log("updatedMember:",updatedMember);
     return this.http.put<Member>(url, updatedMember);
   }
   addMember(addedMember: any): Observable<Member> {

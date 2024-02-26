@@ -17,6 +17,9 @@
           <li><a [routerLink]="'/competitions'" class="hover:text-gray-200" href="#">Competitions</a></li>
           <li><a [routerLink]="'/members'" class="hover:text-gray-200" href="#">Members</a></li>
           <li><a  [routerLink]="'/huntings'" class="hover:text-gray-200" href="#">Today's Hunting!</a></li>
+          <li><a  [routerLink]="'/register'" class="hover:text-gray-200" href="#">Register</a></li>
+          <li><a  [routerLink]="'/login'" class="hover:text-gray-200" href="#">Login</a></li>
+          <li><a   (click)="logout()"  class="hover:text-gray-200" href="#">Logout</a></li>
         </ul>
       </div>
       <button class="navbar-burger self-center mr-12 xl:hidden" type="button" id="burgerBtn">

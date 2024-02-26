@@ -18,4 +18,10 @@ export class HuntingService {
     return this.http.post<Hunting>(`${this.apiBaseUrl}/huntings`, addedHunting);
   }
 
+  isMemberAssignedToCompetition(competitionId: string, memberId: number): Observable<boolean> {
+    const url = `${this.apiBaseUrl}/huntings/check-assignment`;
+    const body = { competitionId, memberId };
+
+    return this.http.post<boolean>(url, body);
+  }
 }

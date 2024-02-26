@@ -4,7 +4,7 @@ import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MemberService } from './member.service';
 import { ReactiveFormsModule } from '@angular/forms';
-import {IdentityDocumentType, Member} from "./member";
+import {Activation, IdentityDocumentType, Member} from "./member";
 import {Competition} from "../competitions/competition";
 import Swal from "sweetalert2";
 
@@ -19,6 +19,7 @@ export class MemberComponent implements OnInit {
   currentPage = 0;
   pageSize: number = 6;
   types: string[] = Object.values(IdentityDocumentType);
+  typess: string[] = Object.values(Activation);
   members: Member[] = [];
   accessionDate: Date = new Date();
   isUpdateMode: boolean = false;
@@ -42,9 +43,10 @@ export class MemberComponent implements OnInit {
       memberFamilyName: ['', Validators.required],
       memberAccessionDate: ['', Validators.required],
   //    memberIdentityDocument: ['', Validators.required],
-      memberIdentityNumber: ['', Validators.required],
-      documentType: [Validators.required],
-      memberNationality: ['', Validators.required]
+      memberNationality: ['', Validators.required],
+      memberActivation: ['', Validators.required],
+
+
     });
 
     this.addForm = this.formBuilder.group({
@@ -100,18 +102,19 @@ export class MemberComponent implements OnInit {
     this.isUpdateMode = true;
     this.selectedMemberId = memberId;
     const member = this.members.find(a => a.num === memberId);
-    console.log(member)
+    console.log("this is the found member:",member)
     if (member) {
       this.updateForm.patchValue({
         memberName: member.name,
         memberFamilyName: member.familyName,
         memberAccessionDate: member.accessionDate,
         memberNationality: member.nationality,
-        memberIdentityDocument: member.identityDocument,
-        memberIdentityNumber: member.identityNumber
+        // memberIdentityDocument: member.identityDocument,
+        // memberIdentityNumber: member.identityNumber,
+        memberActivation:member.activation
       });
     }
-    console.log(member);
+    console.log("member:",member);
   }
 
   cancelUpdate() {
@@ -121,15 +124,18 @@ export class MemberComponent implements OnInit {
   }
 
   submitUpdate() {
-    console.log(this.selectedMemberId);
-    if (this.selectedMemberId !== null && this.updateForm.valid) {
+
+    console.log('Selected Member ID:', this.selectedMemberId);
+    console.log('Form Valid:', this.updateForm.valid);
+    if (this.selectedMemberId !== null ) {
       console.log("after");
       const MemberName = this.updateForm.value.memberName;
       const MemberFamilyName = this.updateForm.value.memberFamilyName;
       const MemberAccessionDate = this.updateForm.value.memberAccessionDate;
       const MemberNationality = this.updateForm.value.memberNationality;
-      const MemberIdentityDocument = this.updateForm.value.documentType;
-      const memberIdentityNumber = this.updateForm.value.memberIdentityNumber;
+      // const MemberIdentityDocument = this.updateForm.value.documentType;
+      // const memberIdentityNumber = this.updateForm.value.memberIdentityNumber;
+      const memberActivation = this.updateForm.value.memberActivation;
 
 
 
@@ -138,8 +144,9 @@ export class MemberComponent implements OnInit {
         familyName: MemberFamilyName,
         accessionDate:MemberAccessionDate,
         nationality:MemberNationality,
-        identityDocument:MemberIdentityDocument,
-        identityNumber:memberIdentityNumber
+        // identityDocument:MemberIdentityDocument,
+        // identityNumber:memberIdentityNumber,
+        activation:memberActivation
 
       };
       console.log("here");

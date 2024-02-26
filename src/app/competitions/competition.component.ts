@@ -4,6 +4,7 @@ import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CompetitionService } from './competition.service';
 import Swal from 'sweetalert2';
+import {Ranking} from "../rankings/ranking";
 import { ReactiveFormsModule } from '@angular/forms';
 import {Competition} from "./competition";
 import {MemberService} from "../members/member.service";
@@ -104,7 +105,6 @@ export class CompetitionComponent implements OnInit {
       }
     );
   }
-
   loadFishes() {
     this.fishService.getFishes().subscribe(
       (data: Fish[]) => {
@@ -276,14 +276,43 @@ console.log(this.selectedCompetitionId);
 
     return competitionCode;
   }
+  private checkAssignRole(): boolean {
+    const userRoleString = localStorage.getItem('userRole');
+    console.log("Stored user role:", userRoleString);
+
+    if (userRoleString) {
+      const userRole = JSON.parse(userRoleString);
+      const authorities = userRole.userId.map((entry: { authority: any; }) => entry.authority);
+
+      console.log("User authorities:", authorities);
+
+      if (authorities.includes("MANAGER") || authorities.includes("JURY")) {
+        console.log("User has MANAGER or JURY role.");
+        return true;
+      }
+    }
+
+    console.log("User does not have MANAGER or JURY role.");
+    return false;
+  }
 
 
   assignMember(competitionId: string) {
-    this.selectedCompetitionId = competitionId;
-    this.isAssignMode = true;
+    console.log(this.checkAssignRole());
+    if (this.checkAssignRole()) {
+      this.selectedCompetitionId = competitionId;
+      this.isAssignMode = true;
+    }else{
+      Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: 'You are not allowed to do this.'
+      });
+    }
   }
 
   submitAssign() {
+
     if (this.assignForm.valid) {
       const memberNum = this.assignForm.value.memberNum;
 
@@ -314,7 +343,7 @@ console.log(this.selectedCompetitionId);
                 Swal.fire({
                   icon: 'error',
                   title: 'Oops...',
-                  text: 'Member already assigned to the competition!'
+                  text: 'You cannot assign new participants less than 24 hours before the start of the competition.'
                 });
               }
             );
@@ -334,7 +363,8 @@ console.log(this.selectedCompetitionId);
         }
       );
     }
-  }
+    }
+
 
 
   onFishSelection(selectedFishName: string) {
@@ -356,8 +386,16 @@ console.log(this.selectedCompetitionId);
 
 
   addHunting(competitionId: string) {
+    if (this.checkAssignRole()) {
     this.selectedCompetitionId = competitionId;
     this.isHuntingMode = true;
+    }else{
+      Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: 'You are not allowed to do this.'
+      });
+    }
   }
 
 
@@ -427,11 +465,75 @@ console.log(this.selectedCompetitionId);
   }
 
 
-  seePodium(competitionId: string) {
-    this.selectedCompetitionId = competitionId;
-    this.isPodiumMode = true;
-    this.podium();
+  seePodium(competition: Competition) {
+    this.selectedCompetitionId = competition.code;
+
+    const storedData = localStorage.getItem('userId');
+    const userId = storedData ? JSON.parse(storedData).userId : null;
+
+    console.log("user id see podium:", userId);
+
+    let isUserAssigned = false;
+
+    for (let rank of competition.rankings) {
+      console.log("Ranking memberNum:", rank.id.memberNum);
+
+      if (rank.id.memberNum === userId) {
+        isUserAssigned = true;
+        this.isPodiumMode = true;
+        this.podium();
+        break;
+      }
+    }
+
+    if (this.checkAssignRole()) {
+      isUserAssigned = true;
+      this.isPodiumMode = true;
+      this.podium();
+    }
+
+    if (!isUserAssigned) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Oops you cant see podium...',
+        text: 'You are not assigned to this competition!'
+      });
+    }
   }
+
+
+
+  // seePodium(competition: Competition) {
+  //   this.selectedCompetitionId = competition.code;
+  //
+  //   const storedData = localStorage.getItem('userId');
+  //   const userId = storedData ? JSON.parse(storedData).userId : null;
+  //
+  //   console.log("user id see podium:", userId);
+  //
+  //   let isUserAssigned = false;
+  //
+  //   for (let rank of competition.rankings) {
+  //     console.log("Ranking memberNum:", rank.id.memberNum);
+  //
+  //     if (rank.id.memberNum == userId || this.checkAssignRole()) {
+  //       isUserAssigned = true;
+  //       this.isPodiumMode = true;
+  //       this.podium();
+  //       break;
+  //     }
+  //   }
+  //
+  //   if (!isUserAssigned) {
+  //     Swal.fire({
+  //       icon: 'error',
+  //       title: 'Oops you cant see podium...',
+  //       text: 'You are not assigned to this competition!'
+  //     });
+  //   }
+  // }
+
+
   podium() {
 
     this.rankingService.getTopThreeCompetitors(this.selectedCompetitionId).subscribe(

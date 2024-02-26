@@ -4,6 +4,15 @@ export enum IdentityDocumentType {
   CARTE_RESIDENCE = 'CARTE_RESIDENCE',
   PASSPORT = 'PASSPORT'
 }
+export enum Role{
+  ADHERENT = 'ADHERENT',
+  MANAGER = 'MANAGER',
+  JURY = 'JURY'
+}
+export enum Activation{
+  ENABLED = 'ENABLED',
+  DESABLED = 'DESABLED',
+}
 export interface Member {
   num: number;
   name: string;
@@ -12,4 +21,6 @@ export interface Member {
   nationality:string;
   identityDocument:IdentityDocumentType;
   identityNumber:string;
+  role:Role;
+  activation:Activation;
 }
